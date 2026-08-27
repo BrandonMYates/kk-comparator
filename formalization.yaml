@@ -335,9 +335,21 @@ automation:
       rather than defensive by computing the failures at the trivial character, and p != 2
       in the quadratic fiber count was confirmed necessary by decision procedure at p = 2.'
   spend_usd: subscription-based
-  notes: The mathematics is the author's. The Lean formalization is produced by automation
-    under the author's direction and verified mechanically. No human expert other than the
-    author has reviewed it.
+  notes: 'Roles, stated separately. Direction: the author conceived and wrote the
+    deposited preprint (which carries its own AI-disclosure section), set the target
+    statements and their scope, directed the work, and takes responsibility for the
+    submission. Mathematical argument: the two compared corollaries are theorems of the
+    author''s deposited preprint; the six first-moment statements were developed in the
+    author''s unpublished revision with AI assistance under the author''s direction; the
+    Lean proofs -- including the two hypothesis removals that strengthen the preprint''s
+    corollaries -- were developed by AI agents (Claude Code, claude-opus-5) during
+    formalization, not by the author. Formalization: the same agents, against frozen
+    lemma contracts. Verification: mechanical (Lean, the axiom audit, Comparator) plus
+    an independent re-verification pass by a separate agent (claude-fable-5): clean
+    rebuild, per-theorem axiom audit, byte-identity check of every restated
+    declaration. Communication: the Challenge documentation, this metadata and the
+    library README were drafted by agents and reviewed by the author before
+    submission.'
 fidelity:
   divergences: 'MATERIAL FINDING against the cited source. The deposited preprint (10.5281/zenodo.20771210)
     states Corollary cor:monomial for a prime field with p > d, and its proof ends with the
