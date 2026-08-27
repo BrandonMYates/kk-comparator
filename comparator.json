@@ -1,0 +1,24 @@
+{
+  "challenge_module": "Challenge",
+  "solution_module": "Solution",
+  "theorem_names": [
+    "KickedKloosterman.trace_floquet",
+    "KickedKloosterman.firstMoment",
+    "KickedKloosterman.firstMoment_expectation",
+    "KickedKloosterman.firstMoment_sq",
+    "KickedKloosterman.firstMoment_cube_one_mod_three",
+    "KickedKloosterman.firstMoment_cube_two_mod_three",
+    "KickedKloosterman.monomial_reflection_iff'",
+    "KickedKloosterman.no_antiunitary_sq_neg_one"
+  ],
+  "definition_names": [
+    "KickedKloosterman.phaseMat",
+    "KickedKloosterman.kloostermanSum",
+    "KickedKloosterman.kloostermanMatrix",
+    "KickedKloosterman.freeProp",
+    "KickedKloosterman.varphi",
+    "KickedKloosterman.floquet",
+    "KickedKloosterman.fiberCount"
+  ],
+  "permitted_axioms": ["propext", "Quot.sound", "Classical.choice"]
+}

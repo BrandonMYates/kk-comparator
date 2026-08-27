@@ -1,0 +1,473 @@
+version: v0.4
+project:
+  name: Exact trace identities for the kicked Kloosterman map
+  description: 'This project formalizes in Lean 4 eight exact identities for the kicked Kloosterman
+    map, a quantized map on the finite phase space F_p. Two of the eight are corollaries of
+    the author''s openly deposited preprint (doi:10.5281/zenodo.20771210), formalized in strictly
+    stronger form than the preprint states them; the other six are exact first-moment statements
+    taken from the author''s unpublished post-submission revision of the same manuscript,
+    and they do not appear in the deposited preprint at all. The map''s free generator is
+    the Kloosterman Hamiltonian K_p = sum_{x != 0} psi(x^{-1}) T_x acting on l^2(F_p), where
+    psi is a nontrivial additive character of F_p and T_x is translation by x; in the additive-character
+    basis K_p is diagonal with eigenvalues the Kloosterman sums K(a;p) = sum_{x != 0} psi(a
+    x + x^{-1}). The free propagator is U_{0,tau} = exp(-i tau K_p / sqrt p), and the kicked
+    propagator is U_{f,tau} = D_f U_{0,tau} with D_f the diagonal phase D_f |x> = psi(f(x))
+    |x>.
+
+
+    Six of the eight compared theorems are the exact first-moment package. trace_floquet factors
+    the trace, Tr U_{f,tau} = phi_p(tau) sum_x psi(f(x)), where phi_p(tau) is the common diagonal
+    entry of the free propagator; the kick enters only through a complete character sum and
+    the free step only through one scalar. firstMoment and firstMoment_expectation then evaluate
+    the average of |Tr U_{gamma g,tau}|^2 over the kick strength gamma in F_p^x exactly, as
+    |phi_p(tau)|^2 (p N_g - p^2)/(p - 1), where N_g = #{(x,y) : g(x) = g(y)} is the fiber
+    count of the kick function: the average depends on the kick only through that count. firstMoment_sq,
+    firstMoment_cube_one_mod_three and firstMoment_cube_two_mod_three are the three arithmetic
+    instantiations -- p |phi_p(tau)|^2 for the quadratic kick at every odd prime, 2p |phi_p(tau)|^2
+    for the cubic kick when p = 1 mod 3, and exactly zero for the cubic kick when p = 2 mod
+    3, the last because cubing is then a bijection of F_p and the complete character sum vanishes
+    identically.
+
+
+    The remaining two theorems are corollaries of the manuscript''s affine-reflection classification,
+    each compared in a strictly stronger form than the manuscript states, with the strengthening
+    declared rather than absorbed. monomial_reflection_iff'' says that over a prime field
+    of odd characteristic a monomial kick gamma x^d with gamma nonzero admits an affine reflection
+    centre -- a beta with gamma x^d = gamma (beta - x)^d for every x -- if and only if d is
+    even; the manuscript carries the hypothesis p > d, and it is dropped here, the statement
+    holding for every natural exponent d including d >= p, because the argument evaluates
+    at x = 0 and x = 1 and never mentions the degree of a polynomial. no_antiunitary_sq_neg_one
+    says that in odd dimension no antiunitary squares to -I, where an antiunitary is written
+    in the standard form Theta = W . C with C entrywise complex conjugation, so Theta^2 =
+    W conj(W); the manuscript assumes W unitary and never uses it, so the theorem is proved
+    here for an arbitrary complex matrix over an arbitrary index type of odd cardinality.
+
+
+    Scope, stated plainly. Every compared statement is an exact identity at a fixed finite
+    prime. NOT CLAIMED anywhere in this entry, its Challenge, or its supporting library: any
+    random-matrix, Wigner-Dyson, Sato-Tate, equidistribution or spectral-statistics statement;
+    any level-spacing law, gap-ratio statistic, spectral form factor, or symmetry-class assignment;
+    any asymptotic statement in p or in tau, and any error term. no_antiunitary_sq_neg_one
+    excludes one algebraic possibility and asserts nothing about which symmetry class, if
+    any, is realized. The Weil bound |K(a;p)| <= 2 sqrt p is not used, and neither is any
+    etale-cohomological input; the source manuscript''s numerical sections are not formalized
+    and nothing here depends on them. The cubic vanishing theorem carries the hypothesis p
+    = 2 mod 3 exactly as the source states it, so p = 3 is outside the compared statement.
+
+
+    Definitions. Mathlib has no Kloosterman sums: a case-insensitive grep for "kloosterman"
+    across Mathlib at revision 81a5d257c8e410db227a6665ed08f64fea08e997 (tag v4.32.0) returns
+    zero hits, checked for this entry. The Challenge therefore defines kloostermanSum and
+    kloostermanMatrix inline from Mathlib''s AddChar primitives, together with the five further
+    definitions the compared statements need (phaseMat, freeProp, varphi, floquet, fiberCount);
+    each carries a docstring giving its ordinary mathematical meaning, and the Solution restates
+    every one of them verbatim with a definitional-equality bridge to the library.
+
+
+    Audience. First, arithmetic quantum chaos and the quantization of maps on finite phase
+    spaces: the construction sits directly against the quantized-cat-map programme (Kurlberg
+    and Rudnick, Duke Math. J. 103 (2000), no. 1, doi:10.1215/S0012-7094-00-10314-6) and the
+    kicked-map symmetry-class literature for which Dyson''s threefold way (J. Math. Phys.
+    3 (1962), 1199-1215) supplies the classification vocabulary. What the compared theorems
+    give that community is a family of quantized maps whose one- and two-point trace data
+    are exactly computable at finite p, with the value controlled by a purely arithmetic invariant
+    of the kick (its fiber count), and an exact vanishing in a fixed residue class. Second,
+    the exponential-sums and trace-functions community that studies Kloosterman sums themselves
+    (Kloosterman, Acta Math. 49 (1926), 407-464; Weil, Proc. Nat. Acad. Sci. U.S.A. 34 (1948),
+    204-207; Katz, Gauss Sums, Kloosterman Sums, and Monodromy Groups, Princeton, 1988): the
+    identities are statements about complete sums of Kloosterman phases, and interest in exactly
+    this interface is current -- see arXiv:2601.01603 (Matrix Kloosterman Sums, Random Matrix
+    Statistics, and Cryptography, January 2026), which is independent work on the same keyword
+    pair and is cited here only to identify the readership. Third, the formalization community:
+    because Mathlib has no Kloosterman sums at all, this entry is coverage-creating rather
+    than coverage-duplicating -- it puts a Kloosterman sum, a Kloosterman Hamiltonian and
+    their spectral resolution into Lean, and the supporting library proves the diagonalization
+    of K_p by the finite Fourier transform, the circulant form of the free propagator, and
+    the fiber-count formula N_{x^n} = 1 + (p - 1) gcd(p - 1, n) as reusable results.
+
+
+    Provenance, stated plainly. The two corollaries are formalizations of Corollary cor:monomial
+    and Corollary cor:nosymplectic of the deposited preprint, with hypotheses dropped in each
+    case (p > d, and unitarity together with the restriction to a prime field of odd order);
+    the preprint''s proof of cor:monomial asserts that its hypothesis p > d "is necessary",
+    and the formalized theorem shows that it is not, which is recorded as a material finding
+    under fidelity. The six first-moment statements come from the author''s unpublished, uncirculated
+    post-submission revision; per the registry''s rule on unconfirmable sources, that revision
+    establishes nothing about novelty, priority or reception, and no such claim is made --
+    the statements are simply recorded here as absent from the deposited preprint, which was
+    checked by searching the deposited source for each of its labels and for the phrase "first
+    moment" (zero occurrences). No claim of novelty against the wider literature is made anywhere
+    in this entry. What is asserted, and checked, is that Mathlib contains no Kloosterman
+    content (grepped, above). A search for prior formalizations of Kloosterman sums or of
+    quantized maps on finite phase spaces was targeted, not exhaustive; absence from search
+    is not proof that none exists.'
+  authors:
+  - Brandon Yates
+  license: Apache-2.0
+  responsible_maintainers:
+  - Brandon Yates
+repository:
+  substantive_formalization:
+    id: BrandonMYates/kklab
+    revision: 631add713991324032cfe628dcddb023a6ef991b
+    note: Thin wrapper. The Challenge and Solution in this repository state and bridge; the
+      whole proof development lives in the KKLab library named here, which is pinned by commit
+      in lakefile.toml. The lakefile pin must carry this same 40-character lowercase SHA.
+classification:
+  arxiv:
+  - math.NT
+  - math-ph
+  - nlin.CD
+  msc2020:
+  - '11L05'
+  - '11T23'
+  - '81Q50'
+sources:
+- title: Arithmetic control of Wigner-Dyson symmetry classes in kicked Kloosterman maps
+  authors:
+  - Brandon Yates
+  id: https://doi.org/10.5281/zenodo.20771210
+  location: Zenodo preprint, deposited 2026-06-20, CC BY 4.0 (concept DOI 10.5281/zenodo.20771209;
+    file kicked_kloosterman_v6.pdf)
+  type: paper
+  relationship: formalizes
+  note: 'The author''s openly deposited preprint, and the source of two of the eight compared
+    theorems. Record metadata -- title, creator, date 2026-06-20, open access, resource type
+    preprint, CC BY 4.0, concept DOI, single file kicked_kloosterman_v6.pdf -- was verified
+    against the Zenodo API for this entry, and the deposited source text was read directly.
+    WHAT IS COMPARED FROM IT: Corollary cor:monomial ("Parity of a monomial kick selects the
+    class") is formalized as monomial_reflection_iff'', and Corollary cor:nosymplectic ("Exclusion
+    of the symplectic class") as no_antiunitary_sq_neg_one. Both are formalized with hypotheses
+    dropped: cor:monomial is stated in the preprint for a prime field with p > d and the formalization
+    holds for every exponent d, and cor:nosymplectic is stated there for a unitary W on l^2(F_p)
+    with p > 3 while the formalization holds for an arbitrary complex matrix over any finite
+    index type of odd cardinality. The preprint''s proof of cor:monomial states that "The
+    hypothesis p > d is necessary"; the formalized theorem shows that the reflection criterion
+    holds without it, and that discrepancy is recorded in full under fidelity rather than
+    passed over. SCOPE OF WHAT IS COMPARED: only the reflection-criterion equivalence of cor:monomial
+    and only the "no antiunitary squares to -I in odd dimension" clause of cor:nosymplectic
+    are formalized. The symmetry-class assignments those corollaries go on to make -- that
+    even-degree kicks lie in the orthogonal class and odd-degree kicks in the unitary class,
+    and that the construction realizes the orthogonal and unitary classes but never the symplectic
+    one -- rest in the preprint on Theorem thm:criterion together with reported numerics,
+    are NOT formalized here, and are not claimed anywhere in this entry. WHAT IS NOT IN IT:
+    the six first-moment theorems. The deposited source contains no label prop:firstmoment,
+    eq:firstmoment, eq:tracefact or eq:circulant and no occurrence of the phrase "first moment"
+    (each searched, zero hits); it reports |Tr U^k|^2 only as a binned numerical spectral
+    form factor, with no exact evaluation of the kick-strength average at k = 1. Note also
+    a notational collision for any reader diffing the two: the preprint''s varphi is the semicircle
+    characteristic function J_1(2u)/u appearing in its asymptotic analysis, whereas the Lean
+    varphi is the exact finite-p average p^{-1} sum_a exp(-i s K(a;p)); they are different
+    objects and no asymptotic relation between them is claimed here. The preprint''s Tr denotes
+    the field trace F_q -> F_p, not the matrix trace.'
+  author_endorsement: not-contacted
+  contributors:
+  - name: Brandon Yates
+    role: author of the cited preprint and submitter of this entry; not contacted because
+      no third party needs to be
+- title: Unpublished post-submission revision of "Arithmetic control of Wigner-Dyson symmetry
+    classes in kicked Kloosterman maps"
+  authors:
+  - Brandon Yates
+  type: other
+  relationship: other
+  note: 'The author''s unpublished, uncirculated working revision of the same manuscript,
+    and the origin of the six first-moment statements (its Proposition prop:firstmoment, equations
+    eq:tracefact and eq:firstmoment, together with the three arithmetic instantiations in
+    its "in particular" sentence). It has never been distributed and is not offered as an
+    independently confirmable source; per the registry''s rule, an unconfirmable source establishes
+    nothing about novelty, priority or reception, and no such claim is made for it here. It
+    is recorded for one reason only: to say where those six statements come from, and that
+    they are absent from the deposited preprint cited above. If this revision is published
+    or deposited before this entry is submitted, the entry should be rebuilt citing that deposit.'
+  author_endorsement: not-contacted
+- title: On the representation of numbers in the form ax2+by2+cz2+dt2
+  authors:
+  - H. D. Kloosterman
+  id: https://doi.org/10.1007/BF02564120
+  location: Acta Mathematica 49 (1926), 407-464
+  type: paper
+  relationship: background
+  note: The paper in which the sums K(a;p) = sum_{x != 0} psi(a x + x^{-1}) were introduced.
+    Cited to identify the object defined in the Challenge; no result of this paper is used
+    in any proof. Bibliographic data verified against Crossref for this entry.
+  author_endorsement: not-contacted
+- title: On some exponential sums
+  authors:
+  - Andre Weil
+  id: https://doi.org/10.1073/pnas.34.5.204
+  location: Proc. Nat. Acad. Sci. U.S.A. 34 (1948), no. 5, 204-207
+  type: paper
+  relationship: background
+  note: 'The square-root bound |K(a;p)| <= 2 sqrt p for a nonzero. Recorded because it is
+    what a reader expects to be behind a Kloosterman-sum statement, and to say plainly that
+    it is NOT used: every compared theorem is an exact identity proved by rearrangement and
+    counting, with no estimate anywhere. Bibliographic data verified against Crossref for
+    this entry.'
+  author_endorsement: not-contacted
+- title: Gauss Sums, Kloosterman Sums, and Monodromy Groups
+  authors:
+  - Nicholas M. Katz
+  id: https://doi.org/10.1515/9781400882120
+  location: Annals of Mathematics Studies 116, Princeton University Press, 1988
+  type: book
+  relationship: background
+  note: The standard reference for the sheaf-theoretic and monodromy theory of Kloosterman
+    sums. Recorded to place the object and to identify part of the audience. No etale-cohomological
+    input is used anywhere in this entry, and the source manuscript's results that do consume
+    such input were deliberately excluded from formalization. Bibliographic data verified
+    against OpenAlex for this entry.
+  author_endorsement: not-contacted
+- title: The Threefold Way. Algebraic Structure of Symmetry Groups and Ensembles in Quantum
+    Mechanics
+  authors:
+  - Freeman J. Dyson
+  id: https://doi.org/10.1063/1.1703863
+  location: J. Math. Phys. 3 (1962), no. 6, 1199-1215
+  type: paper
+  relationship: background
+  note: The origin of the orthogonal/unitary/symplectic classification whose vocabulary the
+    source manuscript uses to name its corollary "exclusion of the symplectic class". Cited
+    only to explain that name. Nothing in this entry asserts that any ensemble or symmetry
+    class is realized. Bibliographic data verified against Crossref for this entry.
+  author_endorsement: not-contacted
+- title: Hecke theory and equidistribution for the quantization of linear maps of the torus
+  authors:
+  - Par Kurlberg
+  - Zeev Rudnick
+  id: https://doi.org/10.1215/S0012-7094-00-10314-6
+  location: Duke Math. J. 103 (2000), no. 1
+  type: paper
+  relationship: background
+  note: 'The quantized-cat-map programme: the reference point for what it means to quantize
+    a map on a finite phase space and to control its spectral data arithmetically. Recorded
+    to identify the audience; no result of this paper is used, and the map studied here is
+    not a cat map. Bibliographic data verified against Crossref for this entry.'
+  author_endorsement: not-contacted
+- title: Matrix Kloosterman Sums, Random Matrix Statistics, and Cryptography
+  authors:
+  - Tianshuo Yang
+  id: https://arxiv.org/abs/2601.01603
+  type: paper
+  relationship: background
+  note: Independent 2026 work at the same keyword interface (Kloosterman sums and random-matrix
+    statistics). Recorded as affirmative evidence that a current research audience for exact
+    statements about Kloosterman-sum spectra exists. It is not used, it is not a source of
+    any statement here, and this entry makes no random-matrix or Sato-Tate claim of its own.
+    Existence, title, author, primary category math.NT and date 2026-01-04 verified against
+    the arXiv API for this entry.
+  author_endorsement: not-contacted
+- title: Kicked Kloosterman Reproducibility Package
+  authors:
+  - Brandon Yates
+  id: https://doi.org/10.5281/zenodo.21448886
+  type: other
+  relationship: background
+  note: An open Zenodo deposit by the author, dated 2026-07-20, containing a single archive
+    of numerical scripts (19,355 bytes) for the source manuscript. Recorded for completeness
+    of provenance. It contains no manuscript text and no proof; no compared theorem depends
+    on any numerical output, and numerics are not evidence for anything in this entry. Record
+    metadata (title, creator, date, open access, single file) verified against the Zenodo
+    API for this entry.
+  author_endorsement: not-contacted
+related_formalizations:
+- id: https://github.com/leanprover-community/mathlib4
+  relationship: independent
+  note: 'Mathlib supplies AddChar with sum_mulShift and IsPrimitive.of_ne_one, ZMod p and
+    its field structure, Matrix with circulant, trace, diagonal, det and the matrix exponential,
+    and the real and complex analysis used in the statements. Mathlib contains NO Kloosterman
+    sums: a case-insensitive grep for "kloosterman" across Mathlib at revision 81a5d257c8e410db227a6665ed08f64fea08e997
+    (tag v4.32.0) returns zero hits, checked for this entry. The Kloosterman sum, the Kloosterman
+    Hamiltonian, the propagators and the fiber count are therefore defined in the Challenge
+    and proved about in the supporting library. No prior formalization of Kloosterman sums,
+    in Lean or elsewhere, was found by a targeted search.'
+status:
+  scope: 'PROVED: the eight compared theorems, unconditionally, for every prime p and every
+    real parameter, under exactly the hypotheses shown in their statements (nontriviality
+    of the additive character; p != 2 for the quadratic instantiation and for the monomial
+    criterion; p = 1 mod 3 and p = 2 mod 3 for the two cubic instantiations). NOT PROVED and
+    NOT CLAIMED: any random-matrix, Wigner-Dyson, Sato-Tate, equidistribution or spectral-statistics
+    statement; any level-spacing, gap-ratio or spectral-form-factor result; any asymptotic
+    in p or tau; any second- or higher-moment identity; the affine-reflection criterion itself
+    (only two of its corollaries are compared); and every other result in the deposited preprint
+    or in the author''s unpublished revision, none of which is advertised here.'
+  sorry_count: 0
+  sorry_in_definitions: 0
+  axioms: []
+automation:
+  methods:
+  - method: agent
+    models:
+    - claude-opus-5
+    - claude-fable-5
+    framework: Claude Code
+    tool_setup: 'The mathematics is the author''s. The supporting library (the pinned KKLab
+      repository) was produced on 2026-08-26 by a lead agent (claude-opus-5) coordinating
+      worker agents (claude-opus-5) against frozen lemma contracts, under the author''s direction.
+      Verification -- clean rebuild against Mathlib v4.32.0, per-theorem axiom audit with
+      #print axioms over all 35 public theorems, and a comment-stripped scan for sorry, native_decide
+      and axiom declarations -- was performed by a separate agent (claude-fable-5), which
+      also wrote the Challenge, the Solution and this metadata.'
+    cost:
+      wall_time: The library was built in a single session on 2026-08-26 with concurrent agents;
+        total campaign wall-clock was not recorded, and the delivered library files carry
+        timestamps spanning about twenty minutes at the end of that session. The comparator
+        (Challenge, Solution, comparator.json and this metadata) was prepared on 2026-08-27
+        in about one hour of wall-clock, including three full local builds.
+      spend_usd: subscription-based
+      hardware: local Apple Silicon machine
+    prompting_notes: 'Three items on record. (1) The deposited preprint''s cor:monomial carries
+      the hypothesis p > d, used there to identify a polynomial with the function it induces;
+      during construction it was found to be unnecessary, and monomial_reflection_iff'' proves
+      the criterion for every exponent d by evaluating at x = 0 and x = 1, with no degree
+      argument; the preprint''s proof asserts the opposite, and that is recorded under fidelity.
+      The preprint''s own statement is retained separately in the library, with d < p carried
+      and unused. (2) The preprint''s cor:nosymplectic assumes the matrix W is unitary; unitarity
+      is never used by the determinant argument, so no_antiunitary_sq_neg_one is proved for
+      an arbitrary complex matrix, and the preprint''s phrasing is derived from it. Both drops
+      are declared in the Challenge docstrings rather than absorbed silently. (3) An observation
+      recorded but deliberately NOT built into the compared statement: the unpublished revision''s
+      "for p = 2 mod 3 the cube map is a bijection" understates, because at p = 3 the cube
+      map is the Frobenius, hence the identity, hence also bijective, so the fiber-count lemma
+      generalizes to p != 1 mod 3 with the same proof. The compared theorem keeps the source''s
+      hypothesis p = 2 mod 3 exactly as written, and therefore says nothing at p = 3. Separately,
+      the hypothesis that the additive character is nontrivial was confirmed to be load-carrying
+      rather than defensive by computing the failures at the trivial character, and p != 2
+      in the quadratic fiber count was confirmed necessary by decision procedure at p = 2.'
+  spend_usd: subscription-based
+  notes: The mathematics is the author's. The Lean formalization is produced by automation
+    under the author's direction and verified mechanically. No human expert other than the
+    author has reviewed it.
+fidelity:
+  divergences: 'MATERIAL FINDING against the cited source. The deposited preprint (10.5281/zenodo.20771210)
+    states Corollary cor:monomial for a prime field with p > d, and its proof ends with the
+    sentence, quoted verbatim: "The hypothesis $p > d$ is necessary: when $p \mid d$ the monomial
+    induces a function of lower degree, the case recorded for the cubic in characteristic
+    three below." The compared theorem monomial_reflection_iff'' shows that it is not necessary:
+    the equivalence between the existence of an affine reflection centre and the evenness
+    of d holds over every prime field of odd characteristic for every exponent d, including
+    d >= p, and the Lean proof never mentions the degree of a polynomial -- it evaluates the
+    identity at x = 0 to force the centre to be 0, then at x = 1 to force 2 = 0. The preprint''s
+    observation that a monomial with p | d induces a function of lower degree is correct;
+    what does not follow, and what the formalization refutes, is that the criterion needs
+    p > d. The compared statement is therefore strictly stronger than the source it formalizes,
+    and the source is wrong on this point. A second, smaller strengthening: cor:nosymplectic
+    is stated in the preprint for a unitary W on l^2(F_p) with p > 3, and the compared theorem
+    drops both unitarity (never used by the determinant argument) and the restriction to a
+    prime field, holding for an arbitrary complex matrix over any finite index type of odd
+    cardinality. Both strengthenings are declared in the Challenge docstrings rather than
+    absorbed silently. SCOPE OF THE TWO COROLLARIES: only the reflection-criterion equivalence
+    of cor:monomial and only the odd-dimension exclusion clause of cor:nosymplectic are formalized;
+    the symmetry-class assignments those corollaries also make rest in the preprint partly
+    on reported numerics and are neither formalized nor claimed here. NOTATION: the preprint''s
+    varphi is the semicircle characteristic function J_1(2u)/u of its asymptotic analysis,
+    while the Lean varphi is the exact finite-p average p^{-1} sum_a exp(-i s K(a;p)); these
+    are different objects and no relation between them is claimed. The preprint''s Tr is the
+    field trace F_q -> F_p, not the matrix trace. The manuscript''s parameter combination
+    tau/sqrt(p) is carried by a single real parameter in every Lean statement, which is universally
+    quantified, so the Lean statements cover every tau. The manuscript writes the free propagator
+    as (U_{0,tau})_{xy} = u(y - x); the Lean definition uses Mathlib''s circulant convention,
+    and only the diagonal entry u(0) is consumed, which is the same under either orientation.
+    Antiunitary operators are modelled in the standard form Theta = W . C with C entrywise
+    complex conjugation in the position basis, so that Theta^2 = W conj(W); this is a modelling
+    choice, stated in the Challenge docstring, not a weakening. The uniform average over the
+    nonzero kick strengths is written as an explicit finite sum divided by p - 1; no probability
+    space is involved and none is claimed. Two compared theorems are strictly stronger than
+    the manuscript statements they replace, each declared in its docstring: monomial_reflection_iff''
+    drops the hypothesis p > d, and no_antiunitary_sq_neg_one drops unitarity of W. One deliberate
+    non-generalization: firstMoment_cube_two_mod_three carries the source''s hypothesis p
+    = 2 mod 3, so p = 3 is outside the compared statement even though the underlying fiber
+    count also holds there. No other known divergence.'
+review:
+  status: agent-reviewed
+  reviewers:
+  - Claude Code agents (clean rebuild, per-theorem axiom audit, statement diff, definitional
+    rfl bridges, sorry scan)
+  notes: 'Reviewed internally, mechanically, on 2026-08-27: the supporting library was rebuilt
+    from scratch against Mathlib v4.32.0 and every one of its 35 public theorems was checked
+    with #print axioms to depend on exactly propext, Classical.choice and Quot.sound; a comment-stripped
+    scan of the library found no sorry, no native_decide and no axiom declaration; the Challenge
+    was built and produces exactly eight sorry warnings, one per compared theorem, and no
+    other warning or error; the Solution was built clean; each of the eight compared theorems
+    and each of the seven compared definitions was then checked with #print axioms in a separate
+    file compiled against the built artifacts, all reporting exactly propext, Classical.choice
+    and Quot.sound; and the elaborated type of every compared theorem was printed alongside
+    its library counterpart and found identical modulo the namespace. The seven definitional
+    bridges are compiled in the Solution as rfl in @-form, so the implicit arguments and instance
+    arguments are compared as well. No human expert other than the author has reviewed the
+    mathematics.'
+alignment:
+  namespace: KickedKloosterman
+  statements:
+  - source: Author's unpublished post-submission revision (absent from the deposited preprint
+      10.5281/zenodo.20771210), Proposition prop:firstmoment, equation eq:tracefact
+    lean: KickedKloosterman.trace_floquet
+    module: Challenge
+    status: proved
+    note: Tr U_{f,tau} = phi_p(tau) sum_x psi(f(x)). The Lean statement takes the trace of
+      the matrix product phaseMat * freeProp and the sum over all of ZMod p.
+  - source: Author's unpublished post-submission revision (absent from the deposited preprint
+      10.5281/zenodo.20771210), Proposition prop:firstmoment, equation eq:firstmoment (before
+      normalization)
+    lean: KickedKloosterman.firstMoment
+    module: Challenge
+    status: proved
+    note: sum over nonzero gamma of |Tr U_{gamma g,tau}|^2 = |phi_p(tau)|^2 (p N_g - p^2).
+      Norms are real; the fiber count is a natural number cast to the reals.
+  - source: Author's unpublished post-submission revision (absent from the deposited preprint
+      10.5281/zenodo.20771210), Proposition prop:firstmoment, equation eq:firstmoment
+    lean: KickedKloosterman.firstMoment_expectation
+    module: Challenge
+    status: proved
+    note: The manuscript's normalized form. The expectation over gamma uniform on F_p^x is
+      written as (p - 1)^{-1} times the sum over the nonzero gamma.
+  - source: Author's unpublished post-submission revision (absent from the deposited preprint
+      10.5281/zenodo.20771210), Proposition prop:firstmoment, 'in particular' sentence, quadratic
+      case
+    lean: KickedKloosterman.firstMoment_sq
+    module: Challenge
+    status: proved
+    note: 'N_{x^2} = 2p - 1 gives p |phi_p(tau)|^2. The hypothesis p != 2 is necessary and
+      is carried: at p = 2 the squaring map is a bijection and the fiber count is different.'
+  - source: Author's unpublished post-submission revision (absent from the deposited preprint
+      10.5281/zenodo.20771210), Proposition prop:firstmoment, 'in particular' sentence, cubic
+      case p = 1 mod 3
+    lean: KickedKloosterman.firstMoment_cube_one_mod_three
+    module: Challenge
+    status: proved
+    note: 'N_{x^3} = 3p - 2 gives 2p |phi_p(tau)|^2. The residue hypothesis is genuine: the
+      other class gives a different value.'
+  - source: Author's unpublished post-submission revision (absent from the deposited preprint
+      10.5281/zenodo.20771210), Proposition prop:firstmoment, 'in particular' sentence, cubic
+      case p = 2 mod 3
+    lean: KickedKloosterman.firstMoment_cube_two_mod_three
+    module: Challenge
+    status: proved
+    note: Exactly zero, at every such prime and every value of the parameter. p = 3 is outside
+      the statement, since 3 mod 3 is 0; nothing is claimed there.
+  - source: 'Deposited preprint 10.5281/zenodo.20771210, Corollary cor:monomial ("Parity of
+      a monomial kick selects the class"); strengthened: the hypothesis p > d is dropped'
+    lean: KickedKloosterman.monomial_reflection_iff'
+    module: Challenge
+    status: proved
+    note: The manuscript states the criterion under p > d. The Lean statement drops that hypothesis
+      and holds for every natural exponent d, which is strictly stronger; the parity is that
+      of the natural number d, and the reflection centre is quantified over all of ZMod p.
+      Only the reflection-criterion equivalence is formalized; the corollary's further assignment
+      of even-degree kicks to the orthogonal class and odd-degree kicks to the unitary class
+      is not, and is not claimed. Over a prime field the preprint's criterion Tr(f(x) - f(beta
+      - x)) = 0 reduces to f(x) = f(beta - x), which is what the Lean statement says.
+  - source: 'Deposited preprint 10.5281/zenodo.20771210, Corollary cor:nosymplectic ("Exclusion
+      of the symplectic class"); strengthened: unitarity of W is dropped, as is the restriction
+      to a prime field of odd order'
+    lean: KickedKloosterman.no_antiunitary_sq_neg_one
+    module: Challenge
+    status: proved
+    note: The manuscript states this for a unitary W on l^2(F_p). The Lean statement drops
+      unitarity and replaces the index type by an arbitrary finite type of odd cardinality,
+      which is strictly stronger; applied to ZMod p, whose cardinality p is odd, it gives
+      the preprint's conclusion. Only that clause is formalized; the corollary's further statement
+      that the construction realizes the orthogonal and unitary classes but never the symplectic
+      one is not, and is not claimed.
+acknowledgements: Mathlib and its contributors; the Lean FRO for Lean, Comparator, lean4export
+  and Verso; the Mathlib Initiative for the formalization.yaml standard.
