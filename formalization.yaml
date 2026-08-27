@@ -301,7 +301,7 @@ automation:
     - claude-opus-5
     - claude-fable-5
     framework: Claude Code
-    tool_setup: 'The mathematics is the author''s. The supporting library (the pinned KKLab
+    tool_setup: 'The supporting library (the pinned KKLab
       repository) was produced on 2026-08-26 by a lead agent (claude-opus-5) coordinating
       worker agents (claude-opus-5) against frozen lemma contracts, under the author''s direction.
       Verification -- clean rebuild against Mathlib v4.32.0, per-theorem axiom audit with
